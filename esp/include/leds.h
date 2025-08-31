@@ -2,11 +2,11 @@
 
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include "mpu.h"
+#include "mma.h"
 
-
-#define LED_PIN_BASS 33 
-#define LED_LEN_BASS 38
+// total de leds aproximado
+// cada led tem ~1,8cm 
+#define LED_LEN 278
 
 #define LED_PIN_MELODY 27 //D27
 #define LED_LEN_MELODY 44
@@ -18,8 +18,4 @@ extern int pixelMelody, pixelBass;
 
 void initLed();
 
-void playLed(mpuData dataL, mpuData dataR);
-
-void playBassLEDs();
-void playMelodyLEDs();
-void defineColorBass(float octave, float pitch, float duration);
+void playLed(mmaData dataTop, mmaData dataCenter, mmaData dataBottom);

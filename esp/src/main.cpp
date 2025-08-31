@@ -2,35 +2,47 @@
 #include "ble_gatt_connector.h"
 #include "osc_connector.h"
 #include "leds.h"
-#include "mpu.h"
-#include "buzzers.h"
+#include "mma.h"
 
-mpuData mpuDataL, mpuDataR;
+mmaData mmaDataTop, mmaDataBottom;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // Initialize Serial, Wire and MPU
+  // Initialize Serial, Wire and MMA
   Serial.begin(115200);
+
+  // Scan I2C bus for devices and print found addresses
+  Serial.println("Scanning I2C bus for devices...");
+  Wire.begin();
+  for (uint8_t addr = 1; addr < 127; addr++) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) {
+      Serial.print("I2C device found at 0x");
+      if (addr < 16) Serial.print("0");
+      Serial.println(addr, HEX);
+    }
+  }
 
   initLed();
   initBLE();  // Initialize BLE for GATT server
-  initMPU();  // Initialize MPU
+  initMMA();  // Initialize MMA8451 sensors
 }
 
 void loop() {
-  if (allMpusInitialized){
-    mpuDataL = readMPU(mpuL);
-    mpuDataR = readMPU(mpuR);
-    playLed(mpuDataL, mpuDataR);
+  if (allMmasInitialized) {
+    mmaDataTop = readMMA(mmaTop);
+    mmaDataBottom = readMMA(mmaBottom);
+    //playLed(mmaDataTop, mmaDataBottom);
 
     if (oscDiscoveryDone){
-      sendOSCMessages(mpuDataL, mpuDataR);
-    } else {
-      playBassNote(mpuDataL);
-      playMelodyNote(mpuDataR);
+      sendOSCMessages(mmaDataTop, accTop);
+      sendOSCMessages(mmaDataBottom, accBottom);
     }
+
+    //Serial.printf("Top Acc: X: %f, Y: %f, Z: %f\n", mmaDataTop.ax, mmaDataTop.ay, mmaDataTop.az);
+    //Serial.printf("Bottom Acc: X: %f, Y: %f, Z: %f\n", mmaDataBottom.ax, mmaDataBottom.ay, mmaDataBottom.az);
   }
   
-  delay(1000);
+  delay(50);
 }

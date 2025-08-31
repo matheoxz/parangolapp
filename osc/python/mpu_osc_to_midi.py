@@ -16,6 +16,7 @@ from matplotlib.animation import FuncAnimation
 from PyQt5.QtWidgets import QApplication
 import socket
 from zeroconf import Zeroconf, ServiceInfo
+from signal_utils.plotter import GenericPlotter
 
 # MIDI setup
 midiout = rtmidi.MidiOut()
@@ -130,56 +131,46 @@ def update_acc_plot(new_x, new_y, new_z):
         acc_data[-1] = [new_x, new_y, new_z]
 
 def plot_window():
-    app = QApplication(sys.argv)
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
-    axs[0].set_title('Gyroscope (gyr)')
-    axs[1].set_title('Accelerometer (acc)')
-    lines_gyr = [axs[0].plot([], [], label=lbl)[0] for lbl in ['x', 'y', 'z']]
-    lines_acc = [axs[1].plot([], [], label=lbl)[0] for lbl in ['x', 'y', 'z']]
-    axs[0].legend()
-    axs[1].legend()
-    axs[0].set_ylim(-36000, 36000)
-    axs[1].set_ylim(-36000, 36000)
-    axs[0].set_xlim(0, PLOT_LEN)
-    axs[1].set_xlim(0, PLOT_LEN)
-
-    mode_text = fig.text(0.1, 0.99, "", ha='left', va='top', fontsize=10, color='green')
-
-    def get_mode_string(opt):
-        if opt == 1:
+    # Configure plot data for generic plotter
+    configs = [
+        {
+            'data': gyr_data,
+            'lock': gyr_lock,
+            'title': 'Gyroscope (gyr)',
+            'labels': ['x', 'y', 'z'],
+            'ylim': (-36000, 36000),
+        },
+        {
+            'data': acc_data,
+            'lock': acc_lock,
+            'title': 'Accelerometer (acc)',
+            'labels': ['x', 'y', 'z'],
+            'ylim': (-36000, 36000),
+        },
+    ]
+    # Text overlay for mode display
+    def text_func():
+        if latest_opt_value == 1:
             return 'Mode 1: MIDI Notes only'
-        elif opt == 2:
+        elif latest_opt_value == 2:
             return 'Mode 2: MIDI Notes + MIDI CC (all axes)'
-        elif opt == 3:
+        elif latest_opt_value == 3:
             return 'Mode 3: MIDI CC (roll/x only, channel 1)'
-        elif opt == 4:
+        elif latest_opt_value == 4:
             return 'Mode 4: MIDI CC (pitch/y only, channel 2)'
-        elif opt == 5:
+        elif latest_opt_value == 5:
             return 'Mode 5: MIDI CC (yaw/z only, channel 3)'
         else:
-            return f'Mode {opt}: Unknown'
+            return f'Mode {latest_opt_value or 0}: Unknown'
 
-    def animate(frame):
-        with gyr_lock:
-            for i, line in enumerate(lines_gyr):
-                line.set_data(np.arange(PLOT_LEN), gyr_data[:, i])
-        with acc_lock:
-            for i, line in enumerate(lines_acc):
-                line.set_data(np.arange(PLOT_LEN), acc_data[:, i])
-        # Update /opt value display
-        if latest_opt_value is not None:
-            mode_text.set_text(get_mode_string(latest_opt_value))
-        else:
-            mode_text.set_text('Mode: Unknown')
-        return lines_gyr + lines_acc + [mode_text]
-
-    for ax in axs:
-        ax.set_xlabel('Samples')
-        ax.set_ylabel('Value')
-    ani = FuncAnimation(fig, animate, interval=50, blit=False)
-    plt.tight_layout()
-    plt.show()
-    app.exec_()
+    plotter = GenericPlotter(
+        data_configs=configs,
+        plot_len=PLOT_LEN,
+        interval=50,
+        text_func=text_func,
+        text_position=(0.1, 0.99)
+    )
+    plotter.show()
 
 # Patch OSC handlers to update plots
 def handle_gyr(address, *args):

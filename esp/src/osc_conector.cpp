@@ -7,10 +7,8 @@ int oscServerPort1 = 8000;
 
 bool oscDiscoveryDone = false;
 
-OSCMessage gyrL("left/gyr");
-OSCMessage accL("left/acc");
-OSCMessage gyrR("right/gyr");
-OSCMessage accR("right/acc");
+OSCMessage accTop("/top/acc");
+OSCMessage accBottom("/bottom/acc");
 
 // Discover OSC services on local network via mDNS
 void discoverOSC() {
@@ -38,43 +36,15 @@ void discoverOSC() {
   }
 }
 
-void sendOSCMessages(mpuData dataL, mpuData dataR) {
+void sendOSCMessages(mmaData data, OSCMessage &msg) {
   // Publish accelerometer data
-  accL.add((float)dataL.ax);
-  accL.add((float)dataL.ay);
-  accL.add((float)dataL.az);
-
-  accR.add((float)dataR.ax);
-  accR.add((float)dataR.ay);
-  accR.add((float)dataR.az);    
-
-  // Publish gyroscope data
-  gyrL.add((float)dataL.gx);
-  gyrL.add((float)dataL.gy);
-  gyrL.add((float)dataL.gz);
-
-  gyrR.add((float)dataR.gx);
-  gyrR.add((float)dataR.gy);
-  gyrR.add((float)dataR.gz);
+  msg.add((float)data.ax);
+  msg.add((float)data.ay);
+  msg.add((float)data.az);
 
   // Send to port
   Udp.beginPacket(oscServerIp.c_str(), oscServerPort1);
-  accL.send(Udp);
+  msg.send(Udp);
   Udp.endPacket();
-  accL.empty();
-
-  Udp.beginPacket(oscServerIp.c_str(), oscServerPort1);
-  accR.send(Udp);
-  Udp.endPacket();
-  accR.empty();
-
-  Udp.beginPacket(oscServerIp.c_str(), oscServerPort1);
-  gyrL.send(Udp);
-  Udp.endPacket();
-  gyrL.empty();
-
-  Udp.beginPacket(oscServerIp.c_str(), oscServerPort1);
-  gyrR.send(Udp);
-  Udp.endPacket();
-  gyrR.empty();
+  msg.empty();
 }

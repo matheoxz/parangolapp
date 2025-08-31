@@ -4,7 +4,7 @@
 #include <WiFiUdp.h>         // UDP for OSC
 #include <OSCMessage.h>      // OSC messaging
 
-#include "mpu.h"
+#include "mma.h"
 
 // Global OSC discovery and UDP packet variables
 extern WiFiUDP Udp1;
@@ -14,9 +14,9 @@ extern int oscServerPort1;
 extern bool oscDiscoveryDone;
 
 // OSC messages
-extern OSCMessage gyrL, accL, gyrR, accR;
+extern OSCMessage accTop, accBottom;
 
 // Discover OSC services on local network via mDNS
 void discoverOSC();
 
-void sendOSCMessages(mpuData dataL, mpuData dataR);
+void sendOSCMessages(mmaData data, OSCMessage &msg);
