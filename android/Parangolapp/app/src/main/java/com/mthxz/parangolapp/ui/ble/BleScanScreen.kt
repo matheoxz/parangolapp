@@ -107,7 +107,7 @@ fun BleScanScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Vamos conectar o Parangolé ao aplicativo", style = MaterialTheme.typography.headlineSmall)
+        Text(text = "Conecte o Parangolé ao app", style = MaterialTheme.typography.headlineSmall)
 
         if (!hasPermissions) {
             Text("Habilite o Bluetooth para se conectar com o Parangolé", color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
