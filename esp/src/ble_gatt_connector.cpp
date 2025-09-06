@@ -48,7 +48,8 @@ class CredCallbacks : public BLECharacteristicCallbacks {
     }
 
     // Notify IP address (or FAIL)
-    ipCharacteristic->setValue(ipMsg.c_str());
+    String ipMsgFull = "IP:" + ipMsg;
+    ipCharacteristic->setValue(ipMsgFull.c_str());
     ipCharacteristic->notify();
     Serial.println("IP address sent over BLE");
   }

@@ -13,18 +13,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mthxz.parangolapp.data.BleDevice
-import com.mthxz.parangolapp.service.BleScannerService
-import com.mthxz.parangolapp.ui.ble.BleViewModel
 import com.mthxz.parangolapp.ui.ble.BleScanScreen
-import com.mthxz.parangolapp.ui.wifi.WifiConfigurationScreen
+import com.mthxz.parangolapp.ui.ble.BleViewModel
 import com.mthxz.parangolapp.ui.connected.ConnectedScreen
+import com.mthxz.parangolapp.ui.wifi.WifiConfigurationScreen
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val bleViewModel = remember { BleViewModel(context) }
-    val bleScannerService = remember { BleScannerService(context) }
     var selectedBleDevice by remember { mutableStateOf<BleDevice?>(null) }
 
     NavHost(

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
@@ -26,6 +27,7 @@ class BleViewModel(context: Context) : ViewModel() {
         private val SERVICE_UUID = UUID.fromString("eab05e32-bbf8-444c-b2a7-4311ed21d61d")
         private val CRED_CHAR_UUID = UUID.fromString("0663eb35-8ef2-4412-8981-326b53272d63")
         private val IP_CHAR_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ad")
+        private val CLIENT_CFG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
     }
 
     // Use the application context to avoid leaking an Activity context
@@ -74,7 +76,7 @@ class BleViewModel(context: Context) : ViewModel() {
             super.onScanResult(callbackType, result)
             val deviceName = result.device.name
             val deviceAddress = result.device.address
-            val bleDevice = BleDevice(deviceName ?: "Unknown Device", deviceAddress)
+            val bleDevice = BleDevice(deviceName ?: "", deviceAddress)
             if (_discoveredDevices.value.none { it.address == deviceAddress }) {
                 _discoveredDevices.value = _discoveredDevices.value + bleDevice
             }
@@ -85,7 +87,7 @@ class BleViewModel(context: Context) : ViewModel() {
             results.forEach { result ->
                 val deviceName = result.device.name
                 val deviceAddress = result.device.address
-                val bleDevice = BleDevice(deviceName ?: "Unknown Device", deviceAddress)
+                val bleDevice = BleDevice(deviceName ?: "", deviceAddress)
                 if (_discoveredDevices.value.none { it.address == deviceAddress }) {
                     _discoveredDevices.value = _discoveredDevices.value + bleDevice
                 }
@@ -112,7 +114,7 @@ class BleViewModel(context: Context) : ViewModel() {
         bleScanner?.startScan(scanCallback)
 
         viewModelScope.launch {
-            kotlinx.coroutines.delay(10000) // Stop scan after 10 seconds
+            kotlinx.coroutines.delay(5000) // Stop scan after 10 seconds
             if (_isScanning.value) {
                 stopScan()
             }
@@ -172,10 +174,21 @@ class BleViewModel(context: Context) : ViewModel() {
                     // Write type should be WRITE_TYPE_DEFAULT for reliable writes
                     char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                 }
+
+                // Subscribe to IP notification characteristic
+                val ipChar = service?.getCharacteristic(IP_CHAR_UUID)
+                if (ipChar != null) {
+                    gatt.setCharacteristicNotification(ipChar, true)
+                    // Enable descriptor for notifications
+                    val descriptor = ipChar.getDescriptor(CLIENT_CFG_UUID)
+                    descriptor?.let {
+                        it.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                        gatt.writeDescriptor(it)
+                    }
+                }
             }
         }
 
-        @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic
@@ -218,20 +231,20 @@ class BleViewModel(context: Context) : ViewModel() {
                         _connectingDeviceAddress.value = null
                     }
                 }
-                s.startsWith("IP:", ignoreCase = true) -> {
+                s.contains("FAIL", ignoreCase = true) -> {
+                    viewModelScope.launch {
+                        _wifiFailed.value = true
+                        _wifiConnected.value = false
+                        _deviceIpAddress.value = null
+                    }
+                }
+                s.startsWith("IP:", ignoreCase = true).and(!s.contains("FAIL")) -> {
                     val ip = s.substringAfter("IP:").trim()
                     viewModelScope.launch {
                         _deviceConnected.value = true
                         _wifiConnected.value = true
                         _wifiFailed.value = false
                         _deviceIpAddress.value = ip
-                    }
-                }
-                s.contains("FAIL", ignoreCase = true) -> {
-                    viewModelScope.launch {
-                        _wifiFailed.value = true
-                        _wifiConnected.value = false
-                        _deviceIpAddress.value = null
                     }
                 }
             }
@@ -296,7 +309,6 @@ class BleViewModel(context: Context) : ViewModel() {
                 }
 
                 char.setValue(message.toByteArray(Charsets.UTF_8))
-                char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE // Change to ensure faster write
 
                 if (!gatt.writeCharacteristic(char)) {
                     viewModelScope.launch {
