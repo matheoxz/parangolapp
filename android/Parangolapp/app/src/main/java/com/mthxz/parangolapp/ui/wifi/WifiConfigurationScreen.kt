@@ -39,7 +39,6 @@ fun WifiConfigurationScreen(
 
     val wifiConnected by bleViewModel.wifiConnected.collectAsState()
     val wifiFailed by bleViewModel.wifiFailed.collectAsState()
-    val deviceConnected by bleViewModel.deviceConnected.collectAsState()
     val deviceIpAddress by bleViewModel.deviceIpAddress.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -113,7 +112,7 @@ fun WifiConfigurationScreen(
                         statusMessage = "Rede aberta selecionada: ${network.ssid}"
                     }
                 }
-                Divider()
+                HorizontalDivider()
             }
         }
 
