@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from osc_server import GenericOSCServer
-from callbacks.acceleration_callbacks import AccelerationCallbacks
+from callbacks.saia_arp_callbacks import AccelerationCallbacks
 from signal_utils.plotter import GenericPlotter
 
 from callbacks.acc_features import skewness, kurtosis, _to_array
@@ -22,6 +22,9 @@ if idx is None:
     print("LoopMIDI port 1 not found. Available ports:", ports)
     sys.exit(1)
 midiout.open_port(idx)
+# inject MIDI output into callbacks for arpeggiator
+AccelerationCallbacks.midiout = midiout
+AccelerationCallbacks.start_midi_thread()
 
 # OSC server setup
 handlers = [
@@ -51,18 +54,11 @@ def plot_window():
             'ylim': (-50, 50),
         },
         {
-            'data': AccelerationCallbacks.skew_data,
+            'data': AccelerationCallbacks.energy_mag_hist[:, None],
             'lock': AccelerationCallbacks.acc_lock,
-            'title': 'Bottom Accelerometer (/bottom/acc)',
-            'labels': ['x', 'y', 'z'],
-            'ylim': (-50, 50),
-        },
-        {
-            'data': AccelerationCallbacks.kurt_data,
-            'lock': AccelerationCallbacks.acc_lock,
-            'title': 'Bottom Accelerometer (/bottom/acc)',
-            'labels': ['x', 'y', 'z'],
-            'ylim': (-50, 50),
+            'title': 'Mean Abs Energy History',
+            'labels': ['mag'],
+            'ylim': (50, 50),
         },
     ]
     plotter = GenericPlotter(data_configs=configs, plot_len=P, interval=50)

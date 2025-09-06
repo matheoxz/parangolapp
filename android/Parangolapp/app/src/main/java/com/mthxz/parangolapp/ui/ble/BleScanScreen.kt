@@ -12,11 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +46,10 @@ fun BleScanScreen(
     val isScanning by viewModel.isScanning.collectAsState()
     val discoveredDevices by viewModel.discoveredDevices.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+
+    val isConnecting by viewModel.isConnecting.collectAsState()
+    val connectingAddress by viewModel.connectingDeviceAddress.collectAsState()
+    val connectionMessage by viewModel.connectionMessage.collectAsState()
 
     var hasPermissions by remember {
         mutableStateOf(
@@ -82,6 +87,19 @@ fun BleScanScreen(
         permissionLauncher.launch(requiredPermissions)
     }
 
+    // remember which device the user selected and is awaiting connection
+    var pendingSelectedDevice by remember { mutableStateOf<BleDevice?>(null) }
+
+    // react to successful connection
+    LaunchedEffect(connectionMessage) {
+        if (connectionMessage?.contains("CONNECTED", ignoreCase = true) == true && pendingSelectedDevice != null) {
+            // proceed to next screen
+            onDeviceSelected(pendingSelectedDevice!!)
+            navController.navigate("wifiConfiguration")
+            pendingSelectedDevice = null
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -115,34 +133,55 @@ fun BleScanScreen(
                 Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
             }
 
-            if (discoveredDevices.isEmpty() && !isScanning && errorMessage == null) {
-                Text("No devices found yet. Press 'Start Scan'.", modifier = Modifier.padding(top = 8.dp))
-            } else if (discoveredDevices.isNotEmpty()) {
-                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    items(discoveredDevices) { device ->
-                        DeviceRow(device = device, onDeviceSelected = {
-                            viewModel.stopScan()
-                            onDeviceSelected(device)
-                            navController.navigate("wifiConfiguration")
-                        })
-                        Divider()
+            when {
+                discoveredDevices.isEmpty() && !isScanning && errorMessage == null -> {
+                    Text("No devices found yet. Press 'Start Scan'.", modifier = Modifier.padding(top = 8.dp))
+                }
+                discoveredDevices.isNotEmpty() -> {
+                    val visibleDevices = discoveredDevices.filter { it.name?.contains("PARANGOLE", ignoreCase = true) ?: false }
+                    if (visibleDevices.isEmpty()) {
+                        Text("Nenhum Parangolé encontrado", modifier = Modifier.padding(top = 8.dp))
+                    } else {
+                        LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                            items(visibleDevices) { device ->
+                                val loadingForThis = isConnecting && connectingAddress == device.address
+                                DeviceRow(device = device, isLoading = loadingForThis, onDeviceSelected = {
+                                    // start connecting and remember pending device
+                                    pendingSelectedDevice = device
+                                    viewModel.stopScan()
+                                    viewModel.connectToDevice(device)
+                                })
+                                HorizontalDivider()
+                            }
+                        }
                     }
                 }
+            }
+
+            // show connection status messages
+            connectionMessage?.let {
+                Text(it, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
 }
 
 @Composable
-fun DeviceRow(device: BleDevice, onDeviceSelected: (BleDevice) -> Unit) {
+fun DeviceRow(device: BleDevice, isLoading: Boolean = false, onDeviceSelected: (BleDevice) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onDeviceSelected(device) }
+            .clickable { if (!isLoading) onDeviceSelected(device) }
             .padding(vertical = 12.dp, horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = device.name ?: "Unknown Device", style = MaterialTheme.typography.bodyLarge)
-        Text(text = device.address, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = device.name ?: "Unknown Device", style = MaterialTheme.typography.bodyLarge)
+            Text(text = device.address, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 2.dp))
+        }
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(start = 12.dp).size(20.dp))
+        }
     }
 }

@@ -41,7 +41,7 @@ class CredCallbacks : public BLECharacteristicCallbacks {
       ipMsg = WiFi.localIP().toString();
       Serial.println("\nWiFi connected: " + ipMsg);
       // Scan for OSC devices once WiFi is connected
-      discoverOSC();
+      //discoverOSC();
     } else {
       ipMsg = "FAIL";
       Serial.println("\nWiFi connect failed");

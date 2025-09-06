@@ -4,20 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mthxz.parangolapp.data.BleDevice
 import com.mthxz.parangolapp.service.BleScannerService
+import com.mthxz.parangolapp.ui.ble.BleViewModel
 import com.mthxz.parangolapp.ui.ble.BleScanScreen
 import com.mthxz.parangolapp.ui.wifi.WifiConfigurationScreen
-import com.mthxz.parangolapp.ui.ip.IPScreen
+import com.mthxz.parangolapp.ui.connected.ConnectedScreen
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val bleScannerService = BleScannerService(LocalContext.current)
+    val context = LocalContext.current
+    val bleViewModel = remember { BleViewModel(context) }
+    val bleScannerService = remember { BleScannerService(context) }
+    var selectedBleDevice by remember { mutableStateOf<BleDevice?>(null) }
 
     NavHost(
         navController = navController,
@@ -27,25 +35,24 @@ fun MainScreen() {
             BleScanScreen(
                 navController = navController,
                 onDeviceSelected = { device ->
-                    bleScannerService.connectToDevice(device.address)
+                    selectedBleDevice = device
+                    bleViewModel.connectToDevice(device)
                     navController.navigate("wifiConfiguration")
                 }
             )
         }
         composable("wifiConfiguration") {
-            WifiConfigurationScreen(
-                navController = navController,
-                selectedBleDevice = BleDevice("ESP32_Device", "00:11:22:33:AA:BB"),
-                onSendCredentials = { ssid, password ->
-                    bleScannerService.sendCredentials(ssid, password)
-                    navController.navigate("ipScreen")
-                },
-            )
+            selectedBleDevice?.let { device ->
+                WifiConfigurationScreen(
+                    navController = navController,
+                    selectedBleDevice = device,
+                    bleViewModel = bleViewModel
+                )
+            }
         }
-        composable("ipScreen") {
-            IPScreen(
-                bleScannerService = bleScannerService,
-                onRetry = { /* Handle retry */ }
+        composable("connected") {
+            ConnectedScreen(
+                bleViewModel = bleViewModel
             )
         }
     }

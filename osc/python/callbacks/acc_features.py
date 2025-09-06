@@ -19,7 +19,7 @@ def _to_array(buffer: ThreeAxisBuffer) -> np.ndarray:
     return np.column_stack((x, y, z))
 
 
-def skewness(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def skewness(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute skewness of each axis in the buffer (tuple per axis).
     """
@@ -27,10 +27,10 @@ def skewness(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
     m = np.mean(arr, axis=0)
     s = np.std(arr, axis=0)
     val = np.mean((arr - m)**3, axis=0) / (s**3 + 1e-8)
-    return tuple(val.tolist())
+    return val
 
 
-def kurtosis(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def kurtosis(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute excess kurtosis of each axis in the buffer (tuple per axis).
     """
@@ -38,75 +38,75 @@ def kurtosis(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
     m = np.mean(arr, axis=0)
     s = np.std(arr, axis=0)
     val = np.mean((arr - m)**4, axis=0) / (s**4 + 1e-8) - 3
-    return tuple(val.tolist())
+    return val
 
 
-def energy(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def energy(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute signal energy per axis (tuple per axis).
     """
     arr = _to_array(buffer)
     val = np.sum(arr**2, axis=0)
-    return tuple(val.tolist())
+    return val
 
 
-def mean(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def mean(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute mean acceleration per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.mean(arr, axis=0).tolist())
+    return np.mean(arr, axis=0)
 
 
-def median(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def median(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute median acceleration per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.median(arr, axis=0).tolist())
+    return np.median(arr, axis=0)
 
 
-def variance(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def variance(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute variance per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.var(arr, axis=0).tolist())
+    return np.var(arr, axis=0)
 
 
-def std(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def std(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute standard deviation per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.std(arr, axis=0).tolist())
+    return np.std(arr, axis=0)
 
 
-def rms(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def rms(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute root-mean-square amplitude per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.sqrt(np.mean(arr**2, axis=0)).tolist())
+    return np.sqrt(np.mean(arr**2, axis=0))
 
 
-def peak_to_peak(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def peak_to_peak(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute peak-to-peak range per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.ptp(arr, axis=0).tolist())
+    return np.ptp(arr, axis=0)
 
 
-def sma(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def sma(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute signal magnitude area per axis (tuple per axis).
     """
     arr = _to_array(buffer)
-    return tuple(np.sum(np.abs(arr), axis=0).tolist())
+    return np.sum(np.abs(arr), axis=0)
 
 
-def zero_crossing_rate(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def zero_crossing_rate(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute zero-crossing rate per axis (tuple of 3 values).
     """
@@ -114,42 +114,42 @@ def zero_crossing_rate(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
     def zcr(a):
         s = np.sign(a)
         return ((s[:-1] * s[1:] < 0).sum() / (len(a)-1))
-    return tuple(zcr(arr[:, i]) for i in range(3))
+    return np.array([zcr(arr[:, i]) for i in range(3)])
 
 
-def waveform_length(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def waveform_length(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute waveform length per axis (tuple of 3 values).
     """
     arr = _to_array(buffer)
-    return tuple(np.sum(np.abs(np.diff(arr[:, i]))) for i in range(3))
+    return np.array([np.sum(np.abs(np.diff(arr[:, i]))) for i in range(3)])
 
 
-def iqr(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def iqr(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute interquartile range per axis (tuple of 3 values).
     """
     arr = _to_array(buffer)
-    return tuple(np.percentile(arr[:, i], 75) - np.percentile(arr[:, i], 25) for i in range(3))
+    return np.array([np.percentile(arr[:, i], 75) - np.percentile(arr[:, i], 25) for i in range(3)])
 
 
-def mad(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def mad(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute median absolute deviation per axis (tuple of 3 values).
     """
     arr = _to_array(buffer)
-    return tuple(np.median(np.abs(arr[:, i] - np.median(arr[:, i]))) for i in range(3))
+    return np.array([np.median(np.abs(arr[:, i] - np.median(arr[:, i]))) for i in range(3)])
 
 
-def crest_factor(buffer: ThreeAxisBuffer) -> tuple[float, float, float]:
+def crest_factor(buffer: ThreeAxisBuffer) -> np.ndarray:
     """
     Compute crest factor per axis (tuple of 3 values).
     """
     arr = _to_array(buffer)
-    return tuple(np.max(np.abs(arr[:, i])) / (np.sqrt(np.mean(arr[:, i]**2)) + 1e-8) for i in range(3))
+    return np.array([np.max(np.abs(arr[:, i])) / (np.sqrt(np.mean(arr[:, i]**2)) + 1e-8) for i in range(3)])
 
 
-def entropy(buffer: ThreeAxisBuffer, bins: int = 10) -> tuple[float, float, float]:
+def entropy(buffer: ThreeAxisBuffer, bins: int = 10) -> np.ndarray:
     """
     Compute Shannon entropy per axis (tuple of 3 values).
     """
@@ -158,7 +158,7 @@ def entropy(buffer: ThreeAxisBuffer, bins: int = 10) -> tuple[float, float, floa
         h,_ = np.histogram(a, bins=bins, density=True)
         h = h[h>0]
         return -np.sum(h*np.log2(h))
-    return tuple(ent(arr[:, i]) for i in range(3))
+    return np.array([ent(arr[:, i]) for i in range(3)])
 
 
 def covariance(buffer: np.ndarray) -> np.ndarray:

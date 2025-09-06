@@ -19,10 +19,22 @@ class GenericOSCServer:
 
     def advertise(self):
         """Advertise the OSC service via mDNS."""
-        try:
-            local_ip = socket.gethostbyname(socket.gethostname())
-        except Exception:
-            local_ip = "127.0.0.1"
+        # Determine IP for mDNS advertisement; prefer explicit host if not wildcard
+        if self.host and self.host != "0.0.0.0":
+            local_ip = self.host
+        else:
+            # attempt to find outbound interface IP
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.connect(("8.8.8.8", 80))
+                local_ip = sock.getsockname()[0]
+            except Exception:
+                local_ip = "127.0.0.1"
+            finally:
+                try:
+                    sock.close()
+                except:
+                    pass
         service_type = "_osc._udp.local."
         service_name = f"{self.instance_name}.{service_type}"
         server_name = f"{self.instance_name}.local."
