@@ -1,5 +1,6 @@
 package com.mthxz.parangolapp
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,8 @@ import com.mthxz.parangolapp.data.BleDevice
 import com.mthxz.parangolapp.ui.ble.BleScanScreen
 import com.mthxz.parangolapp.ui.ble.BleViewModel
 import com.mthxz.parangolapp.ui.connected.ConnectedScreen
+import com.mthxz.parangolapp.ui.osc.OSCServicesSearchScreen
+import com.mthxz.parangolapp.ui.osc.OSCViewModel
 import com.mthxz.parangolapp.ui.wifi.WifiConfigurationScreen
 
 @Composable
@@ -24,6 +27,7 @@ fun MainScreen() {
     val context = LocalContext.current
     val bleViewModel = remember { BleViewModel(context) }
     var selectedBleDevice by remember { mutableStateOf<BleDevice?>(null) }
+    val oscViewModel = remember { OSCViewModel(context.applicationContext as Application) }
 
     NavHost(
         navController = navController,
@@ -44,9 +48,18 @@ fun MainScreen() {
                 WifiConfigurationScreen(
                     navController = navController,
                     selectedBleDevice = device,
-                    bleViewModel = bleViewModel
+                    bleViewModel = bleViewModel,
                 )
             }
+        }
+        composable("oscServices") {
+            OSCServicesSearchScreen(
+                oscViewModel = oscViewModel,
+                bleViewModel = bleViewModel,
+                onNavigateToConnected = {
+                    navController.navigate("connected")
+                }
+            )
         }
         composable("connected") {
             ConnectedScreen(

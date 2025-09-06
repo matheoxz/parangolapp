@@ -35,7 +35,7 @@ void loop() {
     mmaDataBottom = readMMA(mmaBottom);
     //playLed(mmaDataTop, mmaDataBottom);
 
-    if (oscDiscoveryDone){
+    if (oscDestinationConfigured){
       sendOSCMessages(mmaDataTop, accTop);
       sendOSCMessages(mmaDataBottom, accBottom);
     }

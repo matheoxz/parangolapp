@@ -74,7 +74,7 @@ fun WifiConfigurationScreen(
             statusMessage = "Parangolé conectado com sucesso! IP: $deviceIpAddress"
             // Wait a moment to let the user see the success message
             kotlinx.coroutines.delay(1500)
-            navController.navigate("connected")
+            navController.navigate("oscServices")
         }
     }
 

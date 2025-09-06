@@ -28,6 +28,7 @@ class BleViewModel(context: Context) : ViewModel() {
         private val CRED_CHAR_UUID = UUID.fromString("0663eb35-8ef2-4412-8981-326b53272d63")
         private val IP_CHAR_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ad")
         private val CLIENT_CFG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+        private val OSC_IP_CHAR_UUID = UUID.fromString("db031e80-0d15-45de-8c19-4f7bdce94800")
     }
 
     // Use the application context to avoid leaking an Activity context
@@ -327,6 +328,19 @@ class BleViewModel(context: Context) : ViewModel() {
                 _errorMessage.value = "Not connected to device"
                 _wifiFailed.value = true
             }
+        }
+    }
+
+    fun sendOscIpToBleDevice(oscIp: String, oscPort: Int) {
+        val gatt = bluetoothGatt ?: return
+        val service = gatt.getService(SERVICE_UUID) ?: return
+        val characteristic = service.getCharacteristic(OSC_IP_CHAR_UUID) ?: return
+        var message = "$oscIp;$oscPort"
+        characteristic.value = message.toByteArray()
+        gatt.writeCharacteristic(characteristic)
+
+        viewModelScope.launch {
+            _connectionMessage.value = "OSC IP sent: $oscIp : $oscPort"
         }
     }
 

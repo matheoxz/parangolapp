@@ -60,6 +60,10 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0") // activity-compose dependency
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1") // Add ViewModel Compose integration
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
+    // Network Service Discovery
+    implementation("androidx.core:core-ktx:1.12.0")
+
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose) // Add Coroutines support
 

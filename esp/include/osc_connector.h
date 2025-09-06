@@ -12,6 +12,7 @@ extern String oscServerIp;
 extern int oscServerPort1;
 
 extern bool oscDiscoveryDone;
+extern bool oscDestinationConfigured;
 
 // OSC messages
 extern OSCMessage accTop, accBottom;
@@ -20,3 +21,4 @@ extern OSCMessage accTop, accBottom;
 void discoverOSC();
 
 void sendOSCMessages(mmaData data, OSCMessage &msg);
+void setOscDestination(const char* ip, int port);
