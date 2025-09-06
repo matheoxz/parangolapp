@@ -50,7 +50,7 @@ fun WifiConfigurationScreen(
             wifiNetworks.clear()
             wifiNetworks.addAll(wifiScannerService.getAvailableNetworks())
         } else {
-            statusMessage = "Location permission is required to scan for Wi-Fi networks."
+            statusMessage = "É necessária a premissão de geolocalização para encontrar WiFi's próximos."
         }
     }
 
@@ -61,18 +61,20 @@ fun WifiConfigurationScreen(
     LaunchedEffect(wifiFailed) {
         if (wifiFailed) {
             loadingNetwork = null
-            statusMessage = "Failed to connect to network"
+            statusMessage = "Falha ao se conectar à rede, cheque a senha e tente novamente."
         }
     }
 
     LaunchedEffect(wifiConnected, wifiFailed) {
         if (wifiFailed) {
             loadingNetwork = null
-            statusMessage = "The device couldn't connect to the network"
+            statusMessage = "O Parangolé não conseguiu se conectar à rede."
         } else if (wifiConnected && deviceIpAddress != null) {
             // Only navigate if we have an IP address
             loadingNetwork = null
-            statusMessage = "Successfully connected to network"
+            statusMessage = "Parangolé conectado com sucesso! IP: $deviceIpAddress"
+            // Wait a moment to let the user see the success message
+            kotlinx.coroutines.delay(1500)
             navController.navigate("connected")
         }
     }
@@ -84,12 +86,12 @@ fun WifiConfigurationScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Configure Wi-Fi for ${selectedBleDevice.name}", style = MaterialTheme.typography.headlineSmall)
+        Text("Conecte o ${selectedBleDevice.name} a uma rede WiFi", style = MaterialTheme.typography.headlineSmall)
         Text("(${selectedBleDevice.address})", style = MaterialTheme.typography.bodySmall)
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Text("Select a Wi-Fi Network:", style = MaterialTheme.typography.titleMedium)
+        Text("Selecione uma rede: ", style = MaterialTheme.typography.titleMedium)
 
         LazyColumn(
             modifier = Modifier
@@ -108,7 +110,7 @@ fun WifiConfigurationScreen(
                         showPasswordDialog = true
                     } else {
                         password = ""
-                        statusMessage = "Selected open network: ${network.ssid}"
+                        statusMessage = "Rede aberta selecionada: ${network.ssid}"
                     }
                 }
                 Divider()
@@ -116,7 +118,7 @@ fun WifiConfigurationScreen(
         }
 
         selectedWifi?.let {
-            Text("Selected Wi-Fi: ${it.ssid}", style = MaterialTheme.typography.titleSmall)
+            Text("Rede selecionada: ${it.ssid}", style = MaterialTheme.typography.titleSmall)
         }
 
         statusMessage?.let {
@@ -135,39 +137,39 @@ fun WifiConfigurationScreen(
                     bleViewModel.sendWifiCredentials(wifi.ssid, if (wifi.requiresPassword) password else null)
                     showPasswordDialog = false
                 } ?: run {
-                    statusMessage = "Please select a Wi-Fi network first."
+                    statusMessage = "Selecione uma rede primeiro"
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = selectedWifi != null && (!selectedWifi!!.requiresPassword || password.isNotEmpty()) && loadingNetwork == null
         ) {
-            Text("Send Credentials to ESP32")
+            Text("Enviar credenciais ao Parangolé")
         }
     }
 
     if (showPasswordDialog) {
         AlertDialog(
             onDismissRequest = { showPasswordDialog = false },
-            title = { Text("Enter Password for ${selectedWifi?.ssid}") },
+            title = { Text("Digite a senha para ${selectedWifi?.ssid}") },
             text = {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Senha") },
                     singleLine = true
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
                     showPasswordDialog = false
-                    statusMessage = "Password entered for ${selectedWifi?.ssid}"
+                    statusMessage = "Senha digitada para ${selectedWifi?.ssid}"
                 }) {
                     Text("OK")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showPasswordDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancelar")
                 }
             }
         )

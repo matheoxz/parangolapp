@@ -107,26 +107,26 @@ fun BleScanScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "BLE Device Scanner", style = MaterialTheme.typography.headlineSmall)
+        Text(text = "Vamos conectar o Parangolé ao aplicativo", style = MaterialTheme.typography.headlineSmall)
 
         if (!hasPermissions) {
-            Text("Bluetooth permissions are required to scan for BLE devices. Please enable them in your settings.", color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
+            Text("Habilite o Bluetooth para se conectar com o Parangolé", color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
         } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 Button(onClick = { viewModel.startScan() }, enabled = !isScanning) {
-                    Text("Start Scan")
+                    Text("Procurar Parangolés")
                 }
                 Button(onClick = { viewModel.stopScan() }, enabled = isScanning) {
-                    Text("Stop Scan")
+                    Text("Parar procura")
                 }
             }
 
             if (isScanning) {
                 CircularProgressIndicator(modifier = Modifier.padding(vertical = 16.dp))
-                Text("Scanning...")
+                Text("Procurando Parangolés...")
             }
 
             errorMessage?.let {
@@ -135,7 +135,7 @@ fun BleScanScreen(
 
             when {
                 discoveredDevices.isEmpty() && !isScanning && errorMessage == null -> {
-                    Text("No devices found yet. Press 'Start Scan'.", modifier = Modifier.padding(top = 8.dp))
+                    Text("Nenhum parangolé encontrado ainda, inicie a procura!", modifier = Modifier.padding(top = 8.dp))
                 }
                 discoveredDevices.isNotEmpty() -> {
                     val visibleDevices = discoveredDevices.filter { it.name?.contains("PARANGOLE", ignoreCase = true) ?: false }
