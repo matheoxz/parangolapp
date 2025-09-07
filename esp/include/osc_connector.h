@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ESPmDNS.h>         // mDNS for service discovery
 #include <WiFiUdp.h>         // UDP for OSC
 #include <OSCMessage.h>      // OSC messaging
 

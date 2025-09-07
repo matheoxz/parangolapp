@@ -18,7 +18,6 @@ void setOscDestination(const char* ip, int port) {
 }
 
 void sendOSCMessages(mmaData data, OSCMessage &msg) {
-  Serial.println("Sending OSC message to " + oscServerIp + ":" + String(oscServerPort1));
   // Publish accelerometer data
   msg.add((float)data.ax);
   msg.add((float)data.ay);
