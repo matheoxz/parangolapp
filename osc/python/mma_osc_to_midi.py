@@ -25,18 +25,17 @@ MIDIPlayer.start_midi_thread()
 
 # create arpeggiator callback instance
 buffer_len = 200
-chords = ArpeggiatorUtils.create_arpeggio(
-    [(msc.Note.C, msc.Chord.MAJ, 4),
-     (msc.Note.A, msc.Chord.MIN, 4),
-     (msc.Note.F, msc.Chord.MAJ, 4),
-     (msc.Note.G, msc.Chord.MAJ, 4)],
-     ArpeggiatorMode.UP_DOWN)
-arp = TwoAccArpeggiatorCallbacks(MIDIPlayer, buffer_len, chords)
+
+arp = TwoAccArpeggiatorCallbacks(MIDIPlayer, buffer_len)
 
 # OSC server setup with instance methods
 handlers = [
     ("/top/acc",    arp.handle_top_acc),
     ("/bottom/acc", arp.handle_bottom_acc),
+    ("/arp/style",            arp.handle_arp_style),
+    ("/instrument/effect/1",  arp.handle_instrument_effect_1),
+    ("/instrument/effect/2",  arp.handle_instrument_effect_2),
+    ("/drums",                arp.handle_drums),
 ]
 server = GenericOSCServer("parangole_mma_to_midi", "0.0.0.0", 8000, handlers)
 server.start()

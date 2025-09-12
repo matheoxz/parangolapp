@@ -21,7 +21,5 @@ class ArpeggiatorUtils:
         for chord in chords:
             midi_chord = MIDIUtils.midi_chord(chord[0], chord[1], chord[2])
             indices = pattern(midi_chord)
-            print(f"[ArpeggiatorUtils] Chord: {midi_chord}, Pattern indices: {list(indices)}")
             arpeggio.append(indices)
-        print(f"[ArpeggiatorUtils] Final arpeggio: {arpeggio}")
         return arpeggio

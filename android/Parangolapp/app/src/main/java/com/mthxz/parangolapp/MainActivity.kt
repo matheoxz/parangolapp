@@ -17,6 +17,7 @@ import com.mthxz.parangolapp.data.BleDevice
 import com.mthxz.parangolapp.ui.ble.BleScanScreen
 import com.mthxz.parangolapp.ui.ble.BleViewModel
 import com.mthxz.parangolapp.ui.connected.ConnectedScreen
+import com.mthxz.parangolapp.ui.osc.OSCConfigurationsScreen
 import com.mthxz.parangolapp.ui.osc.OSCServicesSearchScreen
 import com.mthxz.parangolapp.ui.osc.OSCViewModel
 import com.mthxz.parangolapp.ui.wifi.WifiConfigurationScreen
@@ -56,9 +57,15 @@ fun MainScreen() {
             OSCServicesSearchScreen(
                 oscViewModel = oscViewModel,
                 bleViewModel = bleViewModel,
-                onNavigateToConnected = {
-                    navController.navigate("connected")
+                onNavigateToConfigurations = {
+                    navController.navigate("oscConfigurations")
                 }
+            )
+        }
+        composable("oscConfigurations") {
+            OSCConfigurationsScreen(
+                oscViewModel = oscViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable("connected") {

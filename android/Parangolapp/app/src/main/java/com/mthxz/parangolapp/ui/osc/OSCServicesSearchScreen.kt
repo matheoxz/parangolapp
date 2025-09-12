@@ -19,7 +19,7 @@ import com.mthxz.parangolapp.ui.ble.BleViewModel
 fun OSCServicesSearchScreen(
     oscViewModel: OSCViewModel = viewModel(),
     bleViewModel: BleViewModel,
-    onNavigateToConnected: () -> Unit
+    onNavigateToConfigurations: () -> Unit
 ) {
     val discoveredServices by oscViewModel.discoveredServices.collectAsState()
     val selectedService by oscViewModel.selectedService.collectAsState()
@@ -46,12 +46,12 @@ fun OSCServicesSearchScreen(
                             selectedService?.let { service ->
                                 // Send the IP to BLE device
                                 bleViewModel.sendOscIpToBleDevice(service.ip, service.port)
-                                onNavigateToConnected()
+                                onNavigateToConfigurations()
                             }
                         },
                         enabled = selectedService != null
                     ) {
-                        Text("Connect to Selected Service")
+                        Text("Open OSC Configurations")
                     }
                 }
             }

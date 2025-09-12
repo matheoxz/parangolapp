@@ -45,13 +45,14 @@ class MIDIPlayer:
             cls.midi_thread = None
 
     @classmethod
-    def play_note(cls, note: int, velocity: int):
+    def play_note(cls, note: int, velocity: int, channel: int = 0, duration: float = None):
         """Queue a MIDI note on and note off event."""
+        duration = duration if duration is not None else cls.duration
         if cls.midiout:
             # Note on
-            cls.midi_queue.put((0, [0x90, note, velocity]))
+            cls.midi_queue.put((0, [0x90 | channel, note, velocity]))
             # Note off after duration
-            cls.midi_queue.put((cls.duration, [0x80, note, 0]))
+            cls.midi_queue.put((duration, [0x80 | channel, note, 0]))
 
     @classmethod
     def play_chord(cls, chord: Chord, velocity: int):
