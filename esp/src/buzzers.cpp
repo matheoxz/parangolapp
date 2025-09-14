@@ -18,8 +18,8 @@ int bb_scale[6][8] = Bb_SCALE;
  * @return The duration of the note, selected randomly from predefined ranges.
  */
 int defineNoteDuration (float totalAcc){
-  if (totalAcc > 0.5 and totalAcc < 0.75) return noteDuration[random(18, 19)];
-  if (totalAcc > 0.75 and totalAcc < 3) return noteDuration[random(10, 18)];
+  if (totalAcc > 0 and totalAcc < 5) return noteDuration[random(18, 19)];
+  if (totalAcc > 5 and totalAcc < 10) return noteDuration[random(10, 18)];
   return noteDuration[random(0, 10)];
 }
 
@@ -37,8 +37,8 @@ void defineMelodyNote(float totalAcc, float totalSpin){
   int octave = melodyCurrentNote.octave;
   int pitch = melodyCurrentNote.pitch;
 
-  if (totalAcc < 3) octave -= 1;
-  if (totalAcc >= 3) octave += 1;
+  if (totalAcc < 5) octave -= 1;
+  if (totalAcc >= 5) octave += 1;
 
   if (octave < 0) octave = 5;
   if (octave > 5) octave = 2;
@@ -105,8 +105,8 @@ void playBassNote(mpuData mpuData){
 }
 
 void playMelodyNote(mpuData mpuData){
-  float totalAcc = sqrt(mpuData.ax * mpuData.ax + mpuData.ay * mpuData.ay);
-  float totalSpin = sqrt(mpuData.gx * mpuData.gx + mpuData.gy * mpuData.gy);
+  float totalAcc = sqrt(mpuData.ax * mpuData.ax + mpuData.ay * mpuData.ay + mpuData.az * mpuData.az) - 9.81;
+  float totalSpin = sqrt(mpuData.gx * mpuData.gx + mpuData.gy * mpuData.gy + mpuData.gz * mpuData.gz);
 
   defineMelodyNote(totalAcc, totalSpin);
   tone(BUZZZER_PIN_1, bb_scale[melodyCurrentNote.octave][melodyCurrentNote.pitch]);

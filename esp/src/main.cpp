@@ -24,6 +24,21 @@ void loop() {
     mpuDataR = readMPU(mpuR);
     playLed(mpuDataL, mpuDataR);
 
+    Serial.print("Left MPU - Accel: ");
+    Serial.print(mpuDataL.ax); Serial.print(", ");
+    Serial.print(mpuDataL.ay); Serial.print(", ");
+    Serial.print(mpuDataL.az); Serial.print(" | Gyro: ");
+    Serial.print(mpuDataL.gx); Serial.print(", ");
+    Serial.print(mpuDataL.gy); Serial.print(", ");
+    Serial.print(mpuDataL.gz); Serial.println();
+    Serial.print("Right MPU - Accel: ");
+    Serial.print(mpuDataR.ax); Serial.print(", ");
+    Serial.print(mpuDataR.ay); Serial.print(", ");
+    Serial.print(mpuDataR.az); Serial.print(" | Gyro: ");
+    Serial.print(mpuDataR.gx); Serial.print(", ");
+    Serial.print(mpuDataR.gy); Serial.print(", ");
+    Serial.print(mpuDataR.gz); Serial.println();
+
     if (oscDiscoveryDone){
       sendOSCMessages(mpuDataL, mpuDataR);
     } else {
