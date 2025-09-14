@@ -1,3 +1,4 @@
+import random
 import threading
 from signal_data.three_axis_buffer import AccelerometerData
 import music_data.music_structures as msc
@@ -46,6 +47,8 @@ class TwoAccArpeggiatorCallbacks:
             self.arp_mode = ArpeggiatorMode.RANDOM
         elif style == "third octaved":
             self.arp_mode = ArpeggiatorMode.THIRD_OCTAVE
+        elif style == "shimmers":
+            self.arp_mode = ArpeggiatorMode.SHIMMERS
         else:
             print(f"[OSC] /arp/style → unknown style: {style}")
         
@@ -110,8 +113,6 @@ class TwoAccArpeggiatorCallbacks:
         else:
             self.drum_flag = False
         print(f"[OSC] /drums → {args}")
-
-
 
     def acc_play_drum(self, midi_port=1):
         if not self.drum_flag:
@@ -186,7 +187,10 @@ class TwoAccArpeggiatorCallbacks:
 
                 if self.midi_player.midiouts[0] and en > 5:
                     print(f"[MIDI] Arpeggiating chord {self.chord_idx}, note {note}")
-                    self.midi_player.play_sync_note(note, vel)
+                    if self.arp_mode == ArpeggiatorMode.SHIMMERS:
+                        self.midi_player.play_sync_note(note, vel, duration= random.uniform(0.05, 0.15), sync=False)
+                    else:
+                        self.midi_player.play_sync_note(note, vel)
                     self.note_idx += 1
                     if self.note_idx >= len(chord):
                         self.note_idx = 0

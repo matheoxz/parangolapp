@@ -59,3 +59,23 @@ circle_of_fifths = [
     [Note.C, Note.G, Note.D, Note.A, Note.E, Note.B, Note.F_SHARP],
     [Note.C, Note.F, Note.BB, Note.EB, Note.AB, Note.DB, Note.GB]
 ]
+
+def parse_chord_list(chord_list_str):
+    """Parse a chord list string into a list of (root, chord_type, octave) tuples.
+    
+    Example input: "C maj,A min,F maj,G maj"
+    Example output: [(Note.C, Chord.MAJ, 4), (Note.A, Chord.MIN, 4), (Note.F, Chord.MAJ, 4), (Note.G, Chord.MAJ, 4)]
+    """
+    chord_list = []
+    for chord_str in chord_list_str.split(','):
+        parts = chord_str.split(' ')
+        if len(parts) != 2:
+            raise ValueError(f"Invalid chord format: {chord_str}")
+        root_str, chord_type_str = parts
+        try:
+            root = Note[root_str.upper().replace('#', '_SHARP')]
+            chord_type = Chord[chord_type_str.upper()]
+            chord_list.append((root, chord_type, 4))  # default octave 4
+        except KeyError as e:
+            raise ValueError(f"Invalid note or chord type: {e}")
+    return chord_list

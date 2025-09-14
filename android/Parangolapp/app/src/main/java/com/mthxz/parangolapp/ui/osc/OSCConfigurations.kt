@@ -39,7 +39,7 @@ fun OSCConfigurationsScreen(
     val host = selectedService!!.ip
     val port = selectedService!!.port
 
-    val arpStyles = listOf("up", "down", "up down", "down up", "third octaved")
+    val arpStyles = listOf("up", "down", "up down", "down up", "random", "third octaved", "shimmers")
     var selectedStyle by remember { mutableStateOf(arpStyles.first()) }
     var styleExpanded by remember { mutableStateOf(false) }
 
