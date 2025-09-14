@@ -1,14 +1,18 @@
 package com.mthxz.parangolapp.ui.osc
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mthxz.parangolapp.services.OSCClient
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +41,17 @@ fun OSCConfigurationsScreen(
     var selectedStyle by remember { mutableStateOf(arpStyles.first()) }
     var styleExpanded by remember { mutableStateOf(false) }
 
-    var effect1 by remember { mutableStateOf(0f) }
-    var effect2 by remember { mutableStateOf(0f) }
+    // Effects as a dynamic list (initially 2)
+    val effects = remember { mutableStateListOf(0f, 0f) }
 
     var drumsOn by remember { mutableStateOf(false) }
+
+    // Note length options (strings kept as sent value)
+    val noteOptions = listOf("1/32", "1/16", "1/12", "1/8", "1/6", "1/4", "1/2", "1", "1.5", "2")
+    var noteIndex by remember { mutableStateOf(6f) } // default index e.g. 1/2
+
+    // BPM
+    var bpm by remember { mutableStateOf(120f) }
 
     Scaffold(
         topBar = {
@@ -81,43 +92,89 @@ fun OSCConfigurationsScreen(
                 }
             }
 
-            // Effect 1
-            Column {
-                Text("Effect 1", style = MaterialTheme.typography.labelLarge)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Slider(
-                        value = effect1,
-                        onValueChange = {
-                            effect1 = it
-                            coroutineScope.launch {
-                                OSCClient.sendMessage(host, port, "/instrument/effect/1", listOf(it.toInt()))
-                            }
-                        },
-                        valueRange = 0f..127f,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(effect1.toInt().toString(), modifier = Modifier.width(40.dp))
+            // Effects header with add button
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Effects", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = {
+                    effects.add(0f)
+                }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add Effect")
                 }
             }
 
-            // Effect 2
+            // Dynamic effect sliders
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                effects.forEachIndexed { idx, value ->
+                    val effectIndex = idx + 1 // 1-based
+                    var sliderValue by remember { mutableStateOf(value) }
+                    Column {
+                        Text("Effect $effectIndex", style = MaterialTheme.typography.labelLarge)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Slider(
+                                value = sliderValue,
+                                onValueChange = {
+                                    sliderValue = it
+                                    effects[idx] = it
+                                    // send /slider with two params: {effect_idx}, {value}
+                                    coroutineScope.launch {
+                                        OSCClient.sendMessage(host, port, "/slider", listOf(effectIndex, it.toInt()))
+                                    }
+                                },
+                                valueRange = 0f..127f,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(sliderValue.toInt().toString(), modifier = Modifier.width(40.dp))
+                        }
+                    }
+                }
+            }
+
+            // Note Length (discrete slider mapped to options)
             Column {
-                Text("Effect 2", style = MaterialTheme.typography.labelLarge)
+                Text("Note Length", style = MaterialTheme.typography.labelLarge)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Slider(
-                        value = effect2,
-                        onValueChange = {
-                            effect2 = it
+                        value = noteIndex,
+                        onValueChange = { v ->
+                            // snap to nearest index
+                            val idx = v.roundToInt().coerceIn(0, noteOptions.lastIndex)
+                            noteIndex = idx.toFloat()
+                            val selected = noteOptions[idx]
                             coroutineScope.launch {
-                                OSCClient.sendMessage(host, port, "/instrument/effect/2", listOf(it.toInt()))
+                                OSCClient.sendMessage(host, port, "/note/length", listOf(selected))
                             }
                         },
-                        valueRange = 0f..127f,
+                        valueRange = 0f..(noteOptions.size - 1).toFloat(),
+                        steps = (noteOptions.size - 2).coerceAtLeast(0),
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(effect2.toInt().toString(), modifier = Modifier.width(40.dp))
+                    Text(noteOptions[noteIndex.roundToInt()])
+                }
+            }
+
+            // BPM slider
+            Column {
+                Text("BPM", style = MaterialTheme.typography.labelLarge)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Slider(
+                        value = bpm,
+                        onValueChange = {
+                            bpm = it
+                            coroutineScope.launch {
+                                OSCClient.sendMessage(host, port, "/bpm", listOf(it.toInt()))
+                            }
+                        },
+                        valueRange = 60f..180f,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(bpm.toInt().toString(), modifier = Modifier.width(48.dp))
                 }
             }
 
@@ -140,4 +197,3 @@ fun OSCConfigurationsScreen(
         }
     }
 }
-

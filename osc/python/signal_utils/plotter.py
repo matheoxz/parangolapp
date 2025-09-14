@@ -61,7 +61,7 @@ class GenericPlotter:
             artists = []
             for cfg, objs in zip(self.data_configs, lines):
                 with cfg['lock']:
-                    data = cfg['data']
+                    data = cfg['data']()
                     for i, ln in enumerate(objs):
                         ln.set_data(range(self.plot_len), data[:, i])
                 artists.extend(objs)

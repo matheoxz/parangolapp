@@ -41,6 +41,20 @@ class AccelerometerData:
         """Return the most recent sample added."""
         idx = self.size-1
         return float(self.buffer_x[idx]), float(self.buffer_y[idx]), float(self.buffer_z[idx])
+    
+    def step_counter(self, threshold: float = 1.0) -> int:
+        """Count steps based on threshold crossings in the z-axis."""
+        arr = self.get()
+        z = arr[:, 2]
+        count = 0
+        above_threshold = False
+        for value in z:
+            if value > threshold and not above_threshold:
+                count += 1
+                above_threshold = True
+            elif value <= threshold:
+                above_threshold = False
+        return count
 
     def skewness(self) -> np.ndarray:
         """Calculate the skewness of the signal."""
@@ -60,6 +74,25 @@ class AccelerometerData:
         """Compute the energy of the signal."""
         arr = self.get()
         return (arr**2).sum(axis=0)
+    
+    def orientation(self) -> np.ndarray:
+        """Estimate device orientation (pitch, roll, yaw) from latest sample."""
+        x, y, z = self.getLastSample()
+        pitch = np.arctan2(x, np.sqrt(y**2 + z**2)) * (180.0 / np.pi)
+        roll  = np.arctan2(y, np.sqrt(x**2 + z**2)) * (180.0 / np.pi)
+        yaw   = np.arctan2(z, np.sqrt(x**2 + y**2)) * (180.0 / np.pi)
+        return np.array([pitch, roll, yaw])
+    
+    def remove_gravity(self) -> np.ndarray:
+        """Estimate linear acceleration by removing gravity using a simple high-pass filter."""
+        alpha = 0.8  # smoothing factor
+        gravity = np.zeros(3)
+        linear_accel = np.zeros((self.size, 3))
+        arr = self.get()
+        for i in range(self.size):
+            gravity = alpha * gravity + (1 - alpha) * arr[i]
+            linear_accel[i] = arr[i] - gravity
+        return linear_accel
     
     def instantEnergy(self) -> np.ndarray:
         """Compute the instantaneous energy of the latest sample."""

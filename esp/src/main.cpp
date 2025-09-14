@@ -24,7 +24,7 @@ void setup() {
     }
   }
 
-  initLed();
+  initLeds();
   initBLE();  // Initialize BLE for GATT server
   initMMA();  // Initialize MMA8451 sensors
 }
@@ -33,7 +33,7 @@ void loop() {
   if (allMmasInitialized) {
     mmaDataTop = readMMA(mmaTop);
     mmaDataBottom = readMMA(mmaBottom);
-    //playLed(mmaDataTop, mmaDataBottom);
+    playLeds(mmaDataTop, mmaDataBottom);
 
     if (oscDestinationConfigured){
       sendOSCMessages(mmaDataTop, accTop);
