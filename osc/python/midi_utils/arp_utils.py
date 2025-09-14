@@ -10,6 +10,7 @@ class ArpeggiatorMode(Enum):
     DOWN_UP = lambda chord: chord[::-1] + chord[1:-1]
     RANDOM = lambda chord: random.sample(chord, len(chord))
     THIRD_OCTAVE = lambda chord: [chord[0], chord[2], chord[1] + 12] * 3
+    SHIMMERS = lambda chord: [note + random.choice([0, 12]) * 2 for note in chord for _ in range(4)]  # for each note, add 4 new random notes
 
 class ArpeggiatorUtils:
     """Utility functions for arpeggiator."""
