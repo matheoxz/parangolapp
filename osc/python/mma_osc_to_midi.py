@@ -26,6 +26,7 @@ handlers = [
     ("/note/length", arp.handle_note_length),
     ("/bpm", arp.handle_bpm),
     ("/drums", arp.handle_drums),
+    ("/chords", arp.handle_chords),
 ]
 server = GenericOSCServer("parangole_mma_to_midi", "0.0.0.0", 8000, handlers)
 server.start()

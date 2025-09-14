@@ -1,6 +1,8 @@
 package com.mthxz.parangolapp.ui.osc
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -64,7 +66,8 @@ fun OSCConfigurationsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Arpeggio Style Dropdown
@@ -129,6 +132,41 @@ fun OSCConfigurationsScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(sliderValue.toInt().toString(), modifier = Modifier.width(40.dp))
+                        }
+                    }
+                }
+            }
+
+            // Chords: four select boxes side-by-side
+            Column {
+                Text("Chords", style = MaterialTheme.typography.labelLarge)
+                // build options: all 12 notes with maj/min
+                val notes = listOf("C","C#","D","D#","E","F","F#","G","G#","A","A#","B")
+                val chordOptions = remember { notes.flatMap { n -> listOf("$n maj", "$n min") } }
+                val chordSelections = remember { mutableStateListOf(chordOptions.first(), chordOptions.first(), chordOptions.first(), chordOptions.first()) }
+                val chordExpanded = remember { mutableStateListOf(false, false, false, false) }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    chordSelections.forEachIndexed { i, sel ->
+                        Column(modifier = Modifier.weight(1f)) {
+                            OutlinedButton(onClick = { chordExpanded[i] = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(sel)
+                            }
+                            DropdownMenu(
+                                expanded = chordExpanded[i],
+                                onDismissRequest = { chordExpanded[i] = false }
+                            ) {
+                                chordOptions.forEach { option ->
+                                    DropdownMenuItem(text = { Text(option) }, onClick = {
+                                        chordSelections[i] = option
+                                        chordExpanded[i] = false
+                                        // send all four chords separated by comma to /chords
+                                        coroutineScope.launch {
+                                            OSCClient.sendMessage(host, port, "/chords", listOf(chordSelections.joinToString(",")))
+                                        }
+                                    })
+                                }
+                            }
                         }
                     }
                 }

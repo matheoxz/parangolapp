@@ -23,30 +23,45 @@ class TwoAccArpeggiatorCallbacks:
         self.chord_idx = 0
         self.note_idx  = 0
         self.drum_flag = True
+        self.arp_mode = ArpeggiatorMode.THIRD_OCTAVE
         self.chord_list = [ (msc.Note.C, msc.Chord.MAJ, 4),
                             (msc.Note.A, msc.Chord.MIN, 4),
                             (msc.Note.F, msc.Chord.MAJ, 4),
                             (msc.Note.G, msc.Chord.MAJ, 4)]
-        self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.THIRD_OCTAVE)
+        self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, self.arp_mode)
 
     def handle_arp_style(self, address, *args):
         """OSC /arp/style — print the style string."""
         style = args[0] if args else None
         print(f"[OSC] /arp/style → {style}")
         if style == "up":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.UP)
+            self.arp_mode = ArpeggiatorMode.UP
         elif style == "down":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.DOWN)
+            self.arp_mode = ArpeggiatorMode.DOWN
         elif style == "up down":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.UP_DOWN)
+            self.arp_mode = ArpeggiatorMode.UP_DOWN
         elif style == "down up":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.DOWN_UP)
+            self.arp_mode = ArpeggiatorMode.DOWN_UP
         elif style == "random":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.RANDOM)
+            self.arp_mode = ArpeggiatorMode.RANDOM
         elif style == "third octaved":
-            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, ArpeggiatorMode.THIRD_OCTAVE)
+            self.arp_mode = ArpeggiatorMode.THIRD_OCTAVE
         else:
             print(f"[OSC] /arp/style → unknown style: {style}")
+        
+        self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, self.arp_mode)
+    
+    def handle_chords(self, address, *args):
+        """OSC /chords — print the chord list string."""
+        chord_list_str = args[0] if args else None
+        print(f"[OSC] /chords → {chord_list_str}")
+        try:
+            chord_list = msc.parse_chord_list(chord_list_str)
+            self.chord_list = chord_list
+            self.chords = ArpeggiatorUtils.create_arpeggio(self.chord_list, self.arp_mode)
+            print(f"[CHORDS] Set to {self.chord_list}")
+        except Exception as e:
+            print(f"[OSC] /chords → invalid chord list: {chord_list_str} ({e})")
 
     def handle_slider(self, address, *args):
         """OSC /slider — map to MIDI CC."""
@@ -90,11 +105,17 @@ class TwoAccArpeggiatorCallbacks:
 
     def handle_drums(self,address, *args):
         """OSC /drums — just print whatever was received."""
+        if args[0] == 'on':
+            self.drum_flag = True
+        else:
+            self.drum_flag = False
         print(f"[OSC] /drums → {args}")
 
 
 
     def acc_play_drum(self, midi_port=1):
+        if not self.drum_flag:
+            return
         #check orientation and remove gravity
         linear_accel = self.top_buffer.remove_gravity()
         x, y, z = linear_accel[-1]
