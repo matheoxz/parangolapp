@@ -19,28 +19,23 @@ int test = false;
 void initLeds() {
   NeoPixel_1.begin();
   NeoPixel_1.show();
-  //NeoPixel_2.begin();
-  //NeoPixel_2.show();
-  // NeoPixel_3.begin();
-  // NeoPixel_3.show();
-  // NeoPixel_4.begin();
-  // NeoPixel_4.show();
-  // NeoPixel_5.begin();
-  // NeoPixel_5.show();
-  // NeoPixel_6.begin();
-  // NeoPixel_6.show();
-  // NeoPixel_7.begin();
-  // NeoPixel_7.show();
-  // NeoPixel_8.begin();
-  // NeoPixel_8.show();
+  NeoPixel_2.begin();
+  NeoPixel_2.show();
+  NeoPixel_3.begin();
+  NeoPixel_3.show();
+  NeoPixel_4.begin();
+  NeoPixel_4.show();
+  NeoPixel_5.begin();
+  NeoPixel_5.show();
+  NeoPixel_6.begin();
+  NeoPixel_6.show();
+  NeoPixel_7.begin();
+  NeoPixel_7.show();
+  NeoPixel_8.begin();
+  NeoPixel_8.show();
 }
 
 void playLeds(mmaData dataTop, mmaData dataBottom) {
-  if (!test) {
-    //testLeds();
-    test = true;
-  }
-
   energyBottom = sqrt(pow(dataBottom.ax, 2) + pow(dataBottom.ay, 2) + pow(dataBottom.az, 2)) - 9.81;
   energyTop = sqrt(pow(dataTop.ax, 2) + pow(dataTop.ay, 2) + pow(dataTop.az, 2)) - 9.81;
 
@@ -55,20 +50,20 @@ void playLeds(mmaData dataTop, mmaData dataBottom) {
 void clearLeds() {
   NeoPixel_1.clear();
   NeoPixel_1.show();
-  // NeoPixel_2.clear();
-  // NeoPixel_2.show();
-  // NeoPixel_3.clear();
-  // NeoPixel_3.show();
-  // NeoPixel_4.clear();
-  // NeoPixel_4.show();
-  // NeoPixel_5.clear();
-  // NeoPixel_5.show();
-  // NeoPixel_6.clear();
-  // NeoPixel_6.show();
-  // NeoPixel_7.clear();
-  // NeoPixel_7.show();
-  // NeoPixel_8.clear();
-  // NeoPixel_8.show();
+  NeoPixel_2.clear();
+  NeoPixel_2.show();
+  NeoPixel_3.clear();
+  NeoPixel_3.show();
+  NeoPixel_4.clear();
+  NeoPixel_4.show();
+  NeoPixel_5.clear();
+  NeoPixel_5.show();
+  NeoPixel_6.clear();
+  NeoPixel_6.show();
+  NeoPixel_7.clear();
+  NeoPixel_7.show();
+  NeoPixel_8.clear();
+  NeoPixel_8.show();
 }
 
 void walkingLeds(StopCondition shouldPlay, uint16_t delayMs) {
@@ -93,20 +88,20 @@ void walkingLeds(StopCondition shouldPlay, uint16_t delayMs) {
       lastUpdate = now;
       setPixelTrail(NeoPixel_1, pixel1);
       pixel1 = (pixel1 + 1) % NeoPixel_1.numPixels();
-      // setPixelColor(NeoPixel_2, pixel2, 0, 150, 0); 
-      // pixel2 = (pixel2 + 1) % NeoPixel_2.numPixels(); 
-      // setPixelColor(NeoPixel_3, pixel3, 0, 150, 0);
-      // pixel3 = (pixel3 + 1) % NeoPixel_3.numPixels();
-      // setPixelColor(NeoPixel_4, pixel4, 0, 150, 0);
-      // pixel4 = (pixel4 + 1) % NeoPixel_4.numPixels();
-      // setPixelColor(NeoPixel_5, pixel5, 0, 150, 0);
-      // pixel5 = (pixel5 + 1) % NeoPixel_5.numPixels();
-      // setPixelColor(NeoPixel_6, pixel6, 0, 150, 0);
-      // pixel6 = (pixel6 + 1) % NeoPixel_6.numPixels();
-      // setPixelColor(NeoPixel_7, pixel7, 0, 150, 0);
-      // pixel7 = (pixel7 + 1) % NeoPixel_7.numPixels();
-      // setPixelColor(NeoPixel_8, pixel8, 0, 150, 0);
-      // pixel8 = (pixel8 + 1) % NeoPixel_8.numPixels();
+      setPixelTrail(NeoPixel_2, pixel2);
+      pixel2 = (pixel2 + 1) % NeoPixel_2.numPixels(); 
+      setPixelTrail(NeoPixel_3, pixel3);
+      pixel3 = (pixel3 + 1) % NeoPixel_3.numPixels();
+      setPixelTrail(NeoPixel_4, pixel4);
+      pixel4 = (pixel4 + 1) % NeoPixel_4.numPixels();
+      setPixelTrail(NeoPixel_5, pixel5);
+      pixel5 = (pixel5 + 1) % NeoPixel_5.numPixels();
+      setPixelTrail(NeoPixel_6, pixel6);
+      pixel6 = (pixel6 + 1) % NeoPixel_6.numPixels();
+      setPixelTrail(NeoPixel_7, pixel7);
+      pixel7 = (pixel7 + 1) % NeoPixel_7.numPixels();
+      setPixelTrail(NeoPixel_8, pixel8);
+      pixel8 = (pixel8 + 1) % NeoPixel_8.numPixels();
     }
     // stop and reset if condition no longer holds
     if (!shouldPlay()) {
@@ -140,9 +135,24 @@ void rainingColors(StopCondition shouldPlay, uint16_t delayMs) {
       // light the next pixel
       NeoPixel_1.setPixelColor(currentPixel, NeoPixel_1.Color(r, g, b));
       NeoPixel_1.show();
+      NeoPixel_2.setPixelColor(currentPixel, NeoPixel_2.Color(r, g, b));
+      NeoPixel_2.show();
+      NeoPixel_3.setPixelColor(currentPixel, NeoPixel_3.Color(r, g, b));
+      NeoPixel_3.show();
+      NeoPixel_4.setPixelColor(currentPixel, NeoPixel_4.Color(r, g, b));
+      NeoPixel_4.show();
+      NeoPixel_5.setPixelColor(currentPixel, NeoPixel_5.Color(r, g, b));
+      NeoPixel_5.show();
+      NeoPixel_6.setPixelColor(currentPixel, NeoPixel_6.Color(r, g, b));
+      NeoPixel_6.show();
+      NeoPixel_7.setPixelColor(currentPixel, NeoPixel_7.Color(r, g, b));
+      NeoPixel_7.show();
+      NeoPixel_8.setPixelColor(currentPixel, NeoPixel_8.Color(r, g, b));
+      NeoPixel_8.show();
+
       currentPixel++;
       // if we filled all pixels, end
-      if (currentPixel >= NeoPixel_1.numPixels()) {
+      if (currentPixel >= 41) {
         started = false;
       }
     }
@@ -178,6 +188,20 @@ void energyLeds(StopCondition shouldPlay, uint16_t delayMs) {
       {
         NeoPixel_1.setPixelColor(i, NeoPixel_1.Color(random(0, 100), random(100, 255), random(50, 150)));
         NeoPixel_1.show();
+        NeoPixel_2.setPixelColor(i, NeoPixel_2.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_2.show();
+        NeoPixel_3.setPixelColor(i, NeoPixel_3.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_3.show();
+        NeoPixel_4.setPixelColor(i, NeoPixel_4.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_4.show();
+        NeoPixel_5.setPixelColor(i, NeoPixel_5.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_5.show();
+        NeoPixel_6.setPixelColor(i, NeoPixel_6.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_6.show();
+        NeoPixel_7.setPixelColor(i, NeoPixel_7.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_7.show();
+        NeoPixel_8.setPixelColor(i, NeoPixel_8.Color(random(0, 100), random(100, 255), random(50, 150)));
+        NeoPixel_8.show();
       }
     }
 
@@ -244,10 +268,24 @@ void breathingLeds(StopCondition shouldPlay, uint16_t delayMs) {
 
       // apply to every pixel
       uint8_t bri = uint8_t(brightness);
-      for (uint16_t i = 0; i < NeoPixel_1.numPixels(); ++i) {
+      for (uint16_t i = 0; i < 41; ++i) {
         setPixelColor(NeoPixel_1, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_2, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_3, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_4, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_5, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_6, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_7, i, 255, 150, 255, bri);
+        setPixelColor(NeoPixel_8, i, 255, 150, 255, bri);
       }
       NeoPixel_1.show();
+      NeoPixel_2.show();
+      NeoPixel_3.show();
+      NeoPixel_4.show();
+      NeoPixel_5.show();
+      NeoPixel_6.show();
+      NeoPixel_7.show();
+      NeoPixel_8.show();
     }
 
     if (!shouldPlay()) {
