@@ -1,6 +1,7 @@
 #include "ble_gatt_connector.h"
 
 BLECharacteristic *ipCharacteristic;
+BLECharacteristic *oscIpCharacteristic;  // new: holds OSC destination writes
 
 // Callback to handle BLE client connections for debugging
 class ServerCallbacks : public BLEServerCallbacks {
@@ -41,16 +42,31 @@ class CredCallbacks : public BLECharacteristicCallbacks {
       ipMsg = WiFi.localIP().toString();
       Serial.println("\nWiFi connected: " + ipMsg);
       // Scan for OSC devices once WiFi is connected
-      discoverOSC();
+      //discoverOSC();
     } else {
       ipMsg = "FAIL";
       Serial.println("\nWiFi connect failed");
     }
 
     // Notify IP address (or FAIL)
-    ipCharacteristic->setValue(ipMsg.c_str());
+    String ipMsgFull = "IP:" + ipMsg;
+    ipCharacteristic->setValue(ipMsgFull.c_str());
     ipCharacteristic->notify();
     Serial.println("IP address sent over BLE");
+  }
+};
+
+class OscIpCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) override {
+    std::string val = pCharacteristic->getValue();            // "IP;PORT"
+    int sep = val.find(';');
+    String oscIp   = String(val.substr(0, sep).c_str());
+    int    oscPort = atoi(val.substr(sep + 1).c_str());
+    Serial.println("Received OSC IP and port:");
+    Serial.print("  IP: ");   Serial.println(oscIp);
+    Serial.print("  Port: "); Serial.println(oscPort);
+    // new: tell your OSC connector where to send messages
+    setOscDestination(oscIp.c_str(), oscPort);
   }
 };
 
@@ -74,6 +90,13 @@ void initBLE() {
     BLECharacteristic::PROPERTY_NOTIFY
   );
   ipCharacteristic->addDescriptor(new BLE2902());
+
+  // OSC IP characteristic (write only)
+  oscIpCharacteristic = pService->createCharacteristic(
+    OSC_IP_CHAR_UUID,
+    BLECharacteristic::PROPERTY_WRITE
+  );
+  oscIpCharacteristic->setCallbacks(new OscIpCallbacks());
 
   pService->start();
   // Start advertising

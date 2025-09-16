@@ -39,8 +39,9 @@ void loop() {
     Serial.print(mpuDataR.gy); Serial.print(", ");
     Serial.print(mpuDataR.gz); Serial.println();
 
-    if (oscDiscoveryDone){
-      sendOSCMessages(mpuDataL, mpuDataR);
+    if (oscDestinationConfigured){
+      sendOSCMessages(mpuDataL, accL);
+      sendOSCMessages(mpuDataR, accR);
     } else {
       playBassNote(mpuDataL);
       playMelodyNote(mpuDataR);

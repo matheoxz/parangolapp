@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ESPmDNS.h>         // mDNS for service discovery
 #include <WiFiUdp.h>         // UDP for OSC
 #include <OSCMessage.h>      // OSC messaging
 
@@ -11,12 +10,10 @@ extern WiFiUDP Udp1;
 extern String oscServerIp;
 extern int oscServerPort1;
 
-extern bool oscDiscoveryDone;
+extern bool oscDestinationConfigured;
 
 // OSC messages
-extern OSCMessage gyrL, accL, gyrR, accR;
+extern OSCMessage accR, accL;
 
-// Discover OSC services on local network via mDNS
-void discoverOSC();
-
-void sendOSCMessages(mpuData dataL, mpuData dataR);
+void sendOSCMessages(mpuData data, OSCMessage &msg);
+void setOscDestination(const char* ip, int port);
