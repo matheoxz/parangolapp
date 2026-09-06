@@ -3,14 +3,18 @@
 #include "osc_connector.h"
 #include "leds.h"
 #include "mma.h"
+#include "sensor_config.h"
+#include "sensor_factory.h"
 
-mmaData mmaDataTop, mmaDataBottom;
+SensorFactory sensorFactory;
+std::vector<std::unique_ptr<Sensor>> sensors;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   // Initialize Serial, Wire and MMA
   Serial.begin(115200);
+  initOSC();
 
   // Scan I2C bus for devices and print found addresses
   Serial.println("Scanning I2C bus for devices...");
@@ -24,24 +28,31 @@ void setup() {
     }
   }
 
+  sensors = sensorFactory.create(SENSOR_CONFIGURATIONS);
   initLeds();
   initBLE();  // Initialize BLE for GATT server
-  initMMA();  // Initialize MMA8451 sensors
 }
 
 void loop() {
-  if (allMmasInitialized) {
-    mmaDataTop = readMMA(mmaTop);
-    mmaDataBottom = readMMA(mmaBottom);
-    playLeds(mmaDataTop, mmaDataBottom);
-
-    if (oscDestinationConfigured){
-      sendOSCMessages(mmaDataTop, accTop);
-      sendOSCMessages(mmaDataBottom, accBottom);
+  if (sensors.size() >= 2) {
+    std::vector<SensorData> readings;
+    readings.reserve(sensors.size());
+    for (const std::unique_ptr<Sensor>& sensor : sensors) {
+      readings.push_back(sensor->read());
     }
 
-    //Serial.printf("Top Acc: X: %f, Y: %f, Z: %f\n", mmaDataTop.ax, mmaDataTop.ay, mmaDataTop.az);
-    //Serial.printf("Bottom Acc: X: %f, Y: %f, Z: %f\n", mmaDataBottom.ax, mmaDataBottom.ay, mmaDataBottom.az);
+    playLeds(readings[0], readings[1]);
+
+    if (oscDestinationConfigured){
+#ifdef PARANGOLA_DEBUG
+      // ANSI escape codes clear and reposition most serial terminals.
+      Serial.print("\033[2J\033[H");
+      Serial.printf("Destination: %s\n", oscServerIp.c_str());
+#endif
+      for (size_t index = 0; index < sensors.size(); ++index) {
+        sendOSCMessages(readings[index], sensors[index]->configuration().oscAddress);
+      }
+    }
   }
   
   delay(50);

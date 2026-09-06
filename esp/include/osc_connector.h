@@ -13,11 +13,11 @@ extern int oscServerPort1;
 extern bool oscDiscoveryDone;
 extern bool oscDestinationConfigured;
 
-// OSC messages
-extern OSCMessage accTop, accBottom;
-
 // Discover OSC services on local network via mDNS
 void discoverOSC();
 
-void sendOSCMessages(mmaData data, OSCMessage &msg);
+// Load the last saved OSC destination from non-volatile storage.
+void initOSC();
+
+void sendOSCMessages(const SensorData& data, const char* oscAddress);
 void setOscDestination(const char* ip, int port);
